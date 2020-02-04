@@ -1,0 +1,46 @@
+<table class="table">
+
+
+    <tr>
+        <th>
+            <h1>Task Name</h1>
+        </th>
+        <th>
+            <h1>Task Description</h1>
+        </th>
+    </tr>
+
+    <tr *ngFor="let task of tasks">
+        <td>
+            <h1>{{task.name}}</h1>
+        </td>
+        <td>
+            <h1>{{task.description}}</h1>
+        </td>
+        <td>
+            <button (click)="toggleEdit(task)" class="btn btn-warning">Edit</button>
+            <button
+                (click)="form_remove(task)"
+                type="button"
+                class="btn btn-danger">Remove</button>
+        </td>
+    </tr>
+
+
+    <tr>
+        <td><input placeholder="name"
+                class="input-group-text"
+                [(ngModel)]="form_name" />
+        </td>
+        <td><input
+                class="input-group-text"
+                placeholder="description"
+                [(ngModel)]="form_description" />
+        </td>
+        <td><button
+                class="btn btn-success"
+                (click)="form_submit()">{{DisplayCondition}}</button>
+        </td>
+    </tr>
+
+</table>
