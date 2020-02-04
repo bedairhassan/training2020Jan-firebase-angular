@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 
 interface Task {
@@ -7,14 +9,18 @@ interface Task {
   description: string
 }
 
+
 @Component({
   selector: 'tasks',
   templateUrl: './tasks.component.html'
 })
+
+
 export class TasksComponent implements OnInit {
   
   //...
   private tasks: Task[]
+  private tasks2: Observable<any[]>
 
   //...
   private form_name: string;
@@ -58,6 +64,27 @@ export class TasksComponent implements OnInit {
     }
   }
 
+
+  // getAll(db){
+  //   db.collection('tasks').valueChanges().subscribe(k=>{console.log(k)
+  //     // this.tasks2=k; // not working
+  //     return k;
+  //     // this.length=k.length // working under // private length:number;
+  //   });
+  // }
+
+  private tasksQ:any[];
+
+  constructor(db:AngularFirestore){
+
+    db.collection('tasks').valueChanges().subscribe(k=>{console.log(k)
+      // this.tasks2=k; // not working
+      this.tasksQ=k
+      // this.length=k.length // working under // private length:number;
+    });
+    // console.table(this.tasks2)
+  }
+
   ngOnInit() {
 
     // api call
@@ -67,6 +94,6 @@ export class TasksComponent implements OnInit {
     ]
 
     // data return
-    console.table(this.tasks)
+    //console.table(this.tasks)
   }
 }

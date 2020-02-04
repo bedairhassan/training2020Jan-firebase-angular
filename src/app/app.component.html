@@ -2,9 +2,8 @@
 
   <nav class="navbar navbar-light bg-light">
     
-
-    <select  (change)="browsefun($event)">
-      <option  *ngFor="let item of browselist">
+    <select  (change)="browsefun($event)" default="tasks">
+      <option  *ngFor="let item of browselist" selected="tasks">
         {{item}}
       </option>
     </select>
