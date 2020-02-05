@@ -1,99 +1,105 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
-
-
-interface Task {
-
-  name: string,
-  description: string
-}
-
+//import { Observable } from 'rxjs';
+//import { taskService } from './task.service';
 
 @Component({
   selector: 'tasks',
-  templateUrl: './tasks.component.html'
+  templateUrl: './tasks.component.html',
+  //providers:[taskService]
 })
 
 
 export class TasksComponent implements OnInit {
-  
-  //...
-  private tasks: Task[]
-  private tasks2: Observable<any[]>
 
-  //...
-  private form_name: string;
-  private form_description: string;
+  form_name: string;
+  form_description: string;
+  docidtoEdit: number;
+  tasksQ: any[];
+  idnext: string;
+  dbglobal: any;
+  DisplayCondition: string = 'Submit';
+
+  private makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
+
+  generateRandomString(){
+
+    return String(this.makeid(10))
+  }
+
+  constructor(db: AngularFirestore) {
+
+    this.dbglobal = db;
+
+    this.dbglobal.collection('tasks').valueChanges().subscribe(k => {
+      // console.log(k)
+      this.tasksQ = k
+      this.idnext = this.generateRandomString()
+    });
+
+    //tService.run();
+  }
+
   public form_submit() {
 
-    // user data
-    console.table({ form_name: this.form_name, form_description: this.form_description })
+    console.table({ name: this.form_name, description: this.form_description })
 
-    // api call 
 
-    if(this.DisplayCondition!=='Submit'){
-      this.tasks = this.tasks.filter(guest => guest.name !== this.form_name) // #remove
+    if (this.DisplayCondition === 'Edit') {
+      this.dbglobal.collection('tasks').doc(String(this.docidtoEdit)).set({
+        name: this.form_name, description: this.form_description,
+        docid: this.docidtoEdit
+      })
+      return;
     }
 
-    this.tasks.push({ name: this.form_name, description: this.form_description })
+    let found = this.tasksQ.filter(task => task.name === this.form_name).length>=1 ? true:false
+    if(found){
+      alert('You can not enter the same task name twice')
+      return;
+    }
+
+    this.dbglobal.collection('tasks').doc(String(this.idnext)).set({ name: this.form_name, description: this.form_description, docid: this.idnext })
+    // this.idnext++; // update it !
+    this.idnext = this.generateRandomString()
   }
   public form_remove(item) {
 
-    // user data
-    console.table({ form_name: item.name, form_description: item.description })
-
-    // api call 
-    this.tasks = this.tasks.filter(guest => guest.name !== item.name) // #remove
+    console.log(`forthis the id is ${item.docid}`)
+    this.dbglobal.collection('tasks').doc(String(item.docid)).delete()
   }
 
-  //...
-  private DisplayCondition: string = 'Submit';
+ 
   toggleEdit(task) {
 
-    this.DisplayCondition = this.DisplayCondition === 'Submit' ? 'Edit' : 'Submit'
-    console.table({ DisplayCondition: this.DisplayCondition })
-    
-    if(this.DisplayCondition==='Submit'){
+    console.log(`forthis the id is ${task.docid}`)
 
-      this.form_name=''
-      this.form_description=''
-    }else{
-      this.form_name=task.name
-      this.form_description=task.description
+    this.DisplayCondition = this.DisplayCondition === 'Submit' ? 'Edit' : 'Submit'
+
+    if (this.DisplayCondition === 'Submit') {
+
+      this.form_name = ''
+      this.form_description = ''
+    } else {
+      this.docidtoEdit = task.docid
+      this.form_name = task.name
+      this.form_description = task.description
     }
   }
 
 
-  // getAll(db){
-  //   db.collection('tasks').valueChanges().subscribe(k=>{console.log(k)
-  //     // this.tasks2=k; // not working
-  //     return k;
-  //     // this.length=k.length // working under // private length:number;
-  //   });
-  // }
-
-  private tasksQ:any[];
-
-  constructor(db:AngularFirestore){
-
-    db.collection('tasks').valueChanges().subscribe(k=>{console.log(k)
-      // this.tasks2=k; // not working
-      this.tasksQ=k
-      // this.length=k.length // working under // private length:number;
-    });
-    // console.table(this.tasks2)
-  }
+  
 
   ngOnInit() {
 
-    // api call
-    this.tasks = [
-      { name: 'Do This', description: 'as early as possible' },
-      { name: 'Do That', description: 'very soon' }
-    ]
 
-    // data return
-    //console.table(this.tasks)
   }
 }
