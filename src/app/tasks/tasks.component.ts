@@ -1,12 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 //import { Observable } from 'rxjs';
-//import { taskService } from './task.service';
+import { TaskService } from '../task.service';
+
+// To Do: 
+// select to input ! // ismodify input // submit input
+// needs select dynamic // map all tasks to tasklist array and find Set
+// (change)="this.input=event.target.value"
 
 @Component({
   selector: 'tasks',
   templateUrl: './tasks.component.html',
-  //providers:[taskService]
+  providers: [TaskService]
 })
 
 
@@ -14,92 +19,60 @@ export class TasksComponent implements OnInit {
 
   form_name: string;
   form_description: string;
+
   docidtoEdit: number;
-  tasksQ: any[];
   idnext: string;
+
+  tasksQ: any[];
   dbglobal: any;
   DisplayCondition: string = 'Submit';
+  ttServiceTask: any;
 
-  private makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
- }
-
-  generateRandomString(){
-
-    return String(this.makeid(10))
-  }
-
-  constructor(db: AngularFirestore) {
+  constructor(db: AngularFirestore, tServicetask: TaskService) {
 
     this.dbglobal = db;
+    this.ttServiceTask = tServicetask
+    this.idnext = tServicetask.generateRandomString()
 
-    this.dbglobal.collection('tasks').valueChanges().subscribe(k => {
-      // console.log(k)
+    db.collection('tasks').valueChanges().subscribe(k => {
       this.tasksQ = k
-      this.idnext = this.generateRandomString()
     });
-
-    //tService.run();
   }
 
   public form_submit() {
 
-    console.table({ name: this.form_name, description: this.form_description })
-
-
+    // if Display Condition is Edit, firebaseEdit
     if (this.DisplayCondition === 'Edit') {
-      this.dbglobal.collection('tasks').doc(String(this.docidtoEdit)).set({
-        name: this.form_name, description: this.form_description,
-        docid: this.docidtoEdit
-      })
+      this.ttServiceTask.Edit(this.dbglobal, this.docidtoEdit, { form_name: this.form_name, form_description: this.form_description })
       return;
     }
 
-    let found = this.tasksQ.filter(task => task.name === this.form_name).length>=1 ? true:false
-    if(found){
+    // if Task.name has been added before, prohibit
+    if (this.ttServiceTask.foundTaskName(this.tasksQ, this.form_name)) {
       alert('You can not enter the same task name twice')
       return;
     }
 
-    this.dbglobal.collection('tasks').doc(String(this.idnext)).set({ name: this.form_name, description: this.form_description, docid: this.idnext })
-    // this.idnext++; // update it !
-    this.idnext = this.generateRandomString()
-  }
-  public form_remove(item) {
-
-    console.log(`forthis the id is ${item.docid}`)
-    this.dbglobal.collection('tasks').doc(String(item.docid)).delete()
+    // Add Task and Return New Id
+    this.idnext = this.ttServiceTask.Add(this.dbglobal, this.idnext, { name: this.form_name, description: this.form_description, docid: this.idnext })
   }
 
- 
+  public form_remove(item) {this.ttServiceTask.Delete(this.dbglobal,item)}
+
+
   toggleEdit(task) {
 
-    console.log(`forthis the id is ${task.docid}`)
+    // Submit,Edit = Edit,Submit // Swap
+    this.DisplayCondition = this.ttServiceTask.DisplayConditionToggle(this.DisplayCondition)
 
-    this.DisplayCondition = this.DisplayCondition === 'Submit' ? 'Edit' : 'Submit'
-
-    if (this.DisplayCondition === 'Submit') {
-
-      this.form_name = ''
-      this.form_description = ''
-    } else {
+    // if Editing mode, save @docidtoEdit
+    if (this.DisplayCondition === 'Edit') {
       this.docidtoEdit = task.docid
-      this.form_name = task.name
-      this.form_description = task.description
     }
-  }
 
-
-  
-
-  ngOnInit() {
-
-
+    // update name and description fields based on (Editing,Submitting)
+    let obj = this.ttServiceTask.DisplayConditionAct(this.DisplayCondition, task)
+    this.form_name = obj.name
+    this.form_description = obj.description
   }
 }
