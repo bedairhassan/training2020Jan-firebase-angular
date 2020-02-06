@@ -1,5 +1,12 @@
-<table class="table">
 
+<h2>    {{DisplayMessage}}</h2>
+<button (click)="SignOut()">Sign Out</button>
+
+<button (click)="addrecord()">Sign Out Explanation Help</button>
+
+
+<h2>Signed in as {{universalobj.username}}</h2>
+<table class="table">
 
     <tr>
         <th>
@@ -8,8 +15,13 @@
         <th>
             <h1>Task Description</h1>
         </th>
+        <th>
+            <h1>Task List</h1>
+            <h5>One Task List has many Tasks</h5>
+        </th>
     </tr>
 
+    
     <tr *ngFor="let task of tasksQ">
         <td>
             <h1>{{task.name}}</h1>
@@ -18,28 +30,43 @@
             <h1>{{task.description}}</h1>
         </td>
         <td>
-            <button (click)="toggleEdit(task)" class="btn btn-warning">Edit</button>
-            <button
-                (click)="form_remove(task)"
-                type="button"
+            <h1>{{task.tasklist}}</h1>
+        </td>
+        <td>
+            <button (click)="toggleEdit(task)"
+                class="btn btn-warning">Edit</button>
+            <button (click)="Delete(task)"
                 class="btn btn-danger">Remove</button>
         </td>
     </tr>
 
-
     <tr>
         <td><input placeholder="name"
                 class="input-group-text"
-                [(ngModel)]="form_name" />
-        </td>
-        <td><input
-                class="input-group-text"
+                [(ngModel)]="form_name" /></td>
+        <td><input class="input-group-text"
                 placeholder="description"
                 [(ngModel)]="form_description" />
         </td>
-        <td><button
-                class="btn btn-success"
-                (click)="form_submit()">{{DisplayCondition}}</button>
+        <td>
+            
+            <!-- select tag here! -->
+            <select  (change)="submitToField($event)" default="tasks">
+                <option  *ngFor="let item of uniqueTaskList" selected="-">
+                  {{item}}
+                </option>
+              </select>
+
+
+            <input class="input-group-text"
+                placeholder="tasklist"
+                [(ngModel)]="form_tasklist" />
+        </td>
+
+
+        
+        <td><button class="btn btn-success"
+                (click)="Add()">{{DisplayCondition}}</button>
         </td>
     </tr>
 

@@ -1,0 +1,12 @@
+
+<input placeholder="username"
+    class="input-group-text"
+    [(ngModel)]="username" /> 
+ <input class="input-group-text"
+    placeholder="password"
+    [(ngModel)]="password" />
+ 
+    <button (click)="SignIn()">SignIn</button>
+    <button (click)="SignUp()">SignUp</button>
+
+<h2>    {{DisplayMessage}}</h2>

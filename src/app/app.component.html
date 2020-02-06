@@ -1,6 +1,7 @@
 <html>
 
-  <nav class="navbar navbar-light bg-light">
+ <div [ngSwitch]="SignedIn">
+   <div *ngSwitchCase="true"> <nav class="navbar navbar-light bg-light">
     
     <select  (change)="browsefun($event)" default="tasks">
       <option  *ngFor="let item of browselist" selected="tasks">
@@ -18,6 +19,11 @@
     <tasks *ngSwitchCase="'tasks'"></tasks>
     <contact *ngSwitchCase="'contact'"></contact>
     <div *ngSwitchDefault>Page Not Found</div>    
+  </div>
+</div>
+   
+<app-sign-page *ngSwitchDefault></app-sign-page>
+ 
   </div>
 
 </html>

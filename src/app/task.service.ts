@@ -1,59 +1,48 @@
 import { Injectable } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/firestore';
+import {ToolsService} from './tools.service'
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
 
-  constructor() { }
 
-  public Edit(dbglobal, docidtoEdit, { form_name, form_description }) {
-    dbglobal.collection('tasks').doc(String(docidtoEdit)).set({
-      name: form_name, description: form_description,
-      docid: docidtoEdit
+  constructor(public dbglobal: AngularFirestore,public toolsService:ToolsService) { }
+
+  public Edit(docid, { name, description, tasklist, username }) {
+    this.dbglobal.collection('tasks').doc(String(docid)).set({
+      name,
+      description,
+      tasklist,
+      username,
+      docid
     })
   }
 
-  private makeid(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-
-  public generateRandomString() {
-
-    return String(this.makeid(10))
-  }
+ 
 
   public foundTaskName(tasksQ: any[], form_name: string) {
     return tasksQ.filter(task => task.name === form_name).length >= 1 ? true : false
   }
 
-  public DisplayConditionAct(DisplayCondition,task){
+  public DisplayConditionAct(DisplayCondition:string, task:any) {
 
-    return DisplayCondition === 'Submit'? {name:'',description:''}
-    :{name:task.name,description:task.description}
+    return DisplayCondition === 'Submit' ? { name: '', description: '', tasklist: '' }
+      : { name: task.name, description: task.description, tasklist: task.tasklist }
 
   }
 
-public DisplayConditionToggle(DisplayCondition){
-return DisplayCondition === 'Submit' ? 'Edit' : 'Submit'
-}
-
-  public Delete(dbglobal,item){
-    dbglobal.collection('tasks').doc(String(item.docid)).delete()
+  public DisplayConditionToggle(DisplayCondition) {
+    return DisplayCondition === 'Submit' ? 'Edit' : 'Submit'
   }
 
-  public Add(dbglobal, idnext, { name, description, docid }) {
-    dbglobal.collection('tasks').doc(String(idnext)).set({ name, description, docid })
-    return this.generateRandomString()
+  public Delete(docid) {
+    this.dbglobal.collection('tasks').doc(String(docid)).delete()
   }
 
-  public run() {
-    console.log('hi')
+  public Add({ name, description, docid, tasklist, username }) {
+    this.dbglobal.collection('tasks').doc(String(docid)).set({ name, description, docid, tasklist, username })
+    return this.toolsService.generateRandomString() // idnext
   }
 }
